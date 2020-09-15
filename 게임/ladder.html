@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <style>
+        
+        div {
+            text-align: center;
+            align-self: center;
+        }
+        #ladderbody{
+            overflow: auto;
+        }
+        table {
+            position: center;
+        }
+        canvas{
+            top: 70px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        시작할 인원 입력:<input type="text" id="num">
+        <button id="ok">설정</button><br>
+    </div>
+    <div id="inputName">
+        <p id="show"></p>
+        <input type="button" id="start" value="사다리타기" >
+        <input type="button" id="random" value="사다리생성">
+
+    </div>
+    <div id="ladderbody" style="width:1000px; height:450px;border:1px solid rgb(51, 45, 45);position:relative;">
+    <!-- <canvas id="mycanvas" style="width: 1000px; height: 450px; border:1px solid red;"></canvas> -->
+    </div>
+</body>
+<script>
+    $("#ladderbody").hide();
+    var arrname = [];
+    var arritem = [];
+    var num = 0;
+    var line = [];
+    var nWidth = 0;
+    var nHeight = 300;
+    var ladderwidth = 1000;
+    var $elemtop=[];
+    var $elemmid=[];
+    var $elembot=[];
+    var randomline=[];
+    var ranpointX=[];
+    var ranpointleft=[];
+    var ranpointtop=[];
+    var resultline=[];
+    var xypoint=[];
+    var cnt=0;
+    var res="0";
+    var temp="10000";
+    var randomleft=[];
+    var randomtop=[];
+    var arrMDiv=[];
+    var arrIng=[];
+    var arrMovDiv=[];
+
+    createDiv=function(div_width,div_height,div_color){
+      var div = document.createElement("div"); 
+    if(div_width) div.style.width=div_width;
+    if(div_height) div.style.height=div_height;
+    if(div_color) div.style.backgroundColor=div_color;
+    div.style.position= "absolute";
+    div.style.overflow="hidden";
+    return div;
+    }
+
+    document.getElementById("ok").addEventListener("click", function () {
+
+        //inputName.style.visibility="visible";
+        num = parseInt(document.getElementById("num").value);
+        var comfirm = "<table border id='input' align='center'>";
+        comfirm += "<tr><td>번호</td><td>이름</td><td>항목</td></tr>";
+        for (var i = 0; i < num; i++) {
+            comfirm += "<tr><td>" + (i + 1) +
+                "</td><td><input type='text' name='name'></td><td><input type='text' name='item'></td></tr>";
+        }
+        comfirm += "</table>";
+        document.getElementById("show").innerHTML = comfirm;
+    });
+
+    $("#start").click(function () {
+                nWidth= parseInt(ladderwidth/num);
+                
+                arrname = document.getElementsByName("name");
+                arritem = document.getElementsByName("item");
+
+        $("#ladderbody").toggle("slow", "easeInOutBack", function () {
+            for (var i = 0; i < num; i++) {
+
+                $elemtop[i]= createDiv(nWidth+"px","50px","");
+                $elembot[i]= createDiv(nWidth+"px","50px","");
+                $elemmid[i]= createDiv(nWidth+"px","30px","");
+
+                $elemtop[i].style.left=(i*nWidth+"px");
+                $elemtop[i].style.top="20px";
+                $elembot[i].style.left=(i*nWidth+"px");
+                $elembot[i].style.top="410px";
+                $elemmid[i].style.left=(i*nWidth+"px");
+                $elemmid[i].style.top="70px";
+                
+                $elemtop[i].align="center";
+                $elemmid[i].align="center";
+                $elembot[i].align="center";
+
+                $elemtop[i].innerHTML="<input type='text' value="+arrname[i].value+" style='width:90%',text-align:'center'; readonly/>"
+                $elembot[i].innerHTML="<input type='text' value="+arritem[i].value+" style='width:90%',text-align:'center'; readonly/>";
+
+                document.getElementById("ladderbody").appendChild($elemtop[i]);
+                document.getElementById("ladderbody").appendChild($elemmid[i]);
+                document.getElementById("ladderbody").appendChild($elembot[i]);
+              
+                line[i] = createDiv("2px", nHeight+"px", "#000000");
+                line[i].style.left = ((i*nWidth)+parseInt(nWidth/2))+"px";
+                line[i].style.top ="100px";
+                document.getElementById("ladderbody").appendChild(line[i]);
+                $elemmid[i].innerHTML = '<input name="rs" type="button" value="결과" onclick="result('+i+')">';
+                ranpointX[i]=((i*nWidth)+parseInt(nWidth/2));
+                console.log(ranpointX);
+
+                arrIng[i] = false;
+
+                arrMDiv[i] = [];
+            }      
+            $("#start").hide();  
+        });
+
+
+    });
+    var arrHorDiv=[];
+    $("#random").click(function(){
+        num = parseInt(document.getElementById("num").value);
+        for(var i=0; i<(num*7); i++){
+
+var nLen = arrHorDiv.length;
+
+arrHorDiv[nLen] = createDiv(nWidth+"px","1px", "#000000");
+
+var nRndLeft = (parseInt(Math.random()*(num-1))*nWidth)+parseInt(nWidth/2);
+var nRndTop = getRndTop();
+
+arrHorDiv[nLen].style.left = nRndLeft+"px";
+arrHorDiv[nLen].style.top = nRndTop+"px";
+document.getElementById("ladderbody").appendChild(arrHorDiv[nLen]);
+console.log(arrHorDiv);
+}
+function getRndTop(){
+    var sRndTop=[];
+    var nRnd = parseInt(Math.random()*(nHeight-100))+150;
+    
+    if(sRndTop.indexOf( "["+nRnd+"]" ) < 0 ){
+        sRndTop += "["+nRnd+"]";
+        return nRnd;
+    }else{
+        return getRndTop();
+    }
+    
+ }
+        // for(var i=cnt; i<cnt+num;i++){
+        //   randomleft[i]=(parseInt(Math.random()*(num-1))*nWidth)+parseInt(nWidth/2);
+        //   randomtop[i]=Math.round(Math.floor(Math.random()*250)+100);
+        //     //console.log(randomleft);
+        //     //console.log(randomtop);
+        //     randomline[i]=createDiv(nWidth+"px","1px","#000000");
+        //     randomline[i].style.left=randomleft[i]+"px";
+        //     //ranpointy[i]=randomline[i].style.left;
+        //     randomline[i].style.top=randomtop[i]+"px";
+        //     //ranpointtop[i]=randomline[i].style.top;
+        //     document.getElementById("ladderbody").appendChild(randomline[i]);
+        //     //ranpointy[i]=(parseInt(Math.random()*(num-1))*nWidth)+parseInt(nWidth/2);
+        //     //ranpointy2[i]=Math.round(Math.floor(Math.random()*250)+100);
+        //     //console.log(ranpointy);
+        //     //console.log(ranpointtop);
+            
+            
+        //     xypoint[i]=[randomleft[i],randomtop[i]];
+        //     // xypoint.sort(function(a,b){
+        //     //     return a[0]-b[0];
+        //     // });
+        //     //console.log(xypoint);
+        //     ranpointleft[i]=xypoint[i][0];
+        //     ranpointtop[i]=xypoint[i][1];
+        //     console.log(ranpointleft);
+        //     console.log(ranpointtop);
+        //     // xypoint.sort(function(a,b){
+        //         //     for(var i=0; i<cnt; i++){
+        //     //     if(ranpointX[1]==xypoint[i][0]){
+        //     //     return a[i][0]-b[i][0];
+        //     //     }
+        //     //     }
+        //     // });
+        // }
+        // cnt=cnt+num;
+    });
+   
+
+    function result(no){
+        if(arrIng[no] ){
+   for(var i=0; i<arrMDiv.length; i++){
+    for(var j=0; j<arrMDiv[i].length; j++){
+     arrMovDiv[arrMDiv[i][j]].style.backgroundColor = "#CCCCCC";
+     arrMovDiv[arrMDiv[i][j]].style.zIndex = 1;
+    }
+
+   }
+   for(var i=0; i<arrMDiv[no].length; i++){
+    arrMovDiv[arrMDiv[no][i]].style.backgroundColor = "#0000ff";
+    arrMovDiv[arrMDiv[no][i]].style.zIndex = 2;
+   }
+  }else{
+  var nSx = parseInt(line[no].style.left);
+  var nSy = parseInt(line[no].style.top);
+
+  resultLine("y",no,nSx,nSy);
+  arrIng[no] = true;
+  }
+   function resultLine(sXy, pno, nSx, nSy){
+
+var nLen = arrMovDiv.length;
+
+arrMovDiv[nLen] = createDiv("2px","2px","#ff0000");
+
+arrMDiv[pno].push(nLen);
+
+document.getElementById("ladderbody").appendChild(arrMovDiv[nLen]);
+
+arrMovDiv[nLen].style.left = nSx+"px";
+arrMovDiv[nLen].style.top = nSy+"px";
+
+arrMovDiv[nLen].style.zIndex = 3;
+
+var nEx = nSx;
+  var nEy = nSy;
+  if(sXy=="y") nEy = nHeight+100;
+
+  var bCk = false;
+
+  for(var i=0; i<arrHorDiv.length; i++){
+
+   var nx = parseInt(arrHorDiv[i].style.left);
+   var ny = parseInt(arrHorDiv[i].style.top);
+   var nw = parseInt(arrHorDiv[i].style.width);
+   var nh = parseInt(arrHorDiv[i].style.height);
+
+   if(sXy=="x"){
+    if( ny == nSy ){
+     if( nx==nSx ){
+      nEx = nx+nw;
+      break;
+     }else if( (nx+nw)==nSx ){
+      nEx = nx;
+      break;
+     }
+    }
+   }else{
+
+    if( ny>nSy ){
+
+     if( nx==nEx || (nx+nw)==nEx ){
+
+      if(bCk){
+       if(ny<nEy) 
+       nEy = ny;
+      }else
+       nEy = ny;
+
+      bCk = true;
+     }
+    }
+   }
+  move(nLen, pno, nSx, nSy, nEx, nEy);
+  console.log(nLen);
+  }
+  var nSpeed = 10;
+  function move(no, pno, nSx, nSy, nEx, nEy){
+
+  var nx = parseInt(arrMovDiv[no].style.left);
+  var ny = parseInt(arrMovDiv[no].style.top);
+  var nw = parseInt(arrMovDiv[no].style.width);
+  var nh = parseInt(arrMovDiv[no].style.height);
+
+  var np;
+  var bIng = true;
+
+  var sXy = "";
+
+  if( nSx != nEx ){
+   np = nw+nSpeed;
+   if(nEx<nSx){
+    if( (nSx-np) <= nEx ){
+     bIng = false;
+     np = nSx-nEx;
+    }
+    arrMovDiv[no].style.left = (nSx-np)+"px";
+   }else{
+    if( (nSx+np) >= nEx ){
+     bIng = false;
+     np = nEx-nSx;
+    }
+   }
+
+   arrMovDiv[no].style.height = "4px";
+   arrMovDiv[no].style.width = np+"px";
+
+   sXy = "x";
+  }else{
+
+   np = nh+nSpeed;
+   if( (nSy+np) >= nEy ){
+    bIng = false;
+    np = nEy-nSy;
+   }
+
+   arrMovDiv[no].style.width = "4px";
+   arrMovDiv[no].style.height = np+"px";
+
+   sXy = "y";
+  }
+
+
+  if(bIng){
+
+   setTimeout("move("+no+","+pno+","+nSx+","+nSy+","+nEx+","+nEy+")", 1);
+
+  }else{
+
+   if((sXy=="x")) arrMovDiv[no].style.height = "2px";
+   else arrMovDiv[no].style.width = "2px";
+
+   if( nEy<nHeight+100 ){
+    resultLine((sXy=="x")?"y":"x", pno, nEx, nEy);
+   }else{
+
+    for(var i=0; i<line.length; i++){
+     if(nEx==parseInt(line[i].style.left)){
+
+        $elembot[i].innerHTML = "<b>"+(pno+1)+"</b><br>"+$elembot[i].innerHTML;
+
+        $elemmid[pno].innerHTML = '<input type="button" value="다시보기" onClick="result('+pno+')">';
+
+      break;
+     }
+    }
+   }
+  }
+ }
+ }
+         }
+        // var canvas = document.getElementById("mycanvas");
+        // var ctx=canvas.getContext("2d");
+// ;           var a=100;
+//         for (var i = 0; i < cnt; i++) {
+//         //for (var j = 0; j < cnt; j++) {
+//         if(ranpointX[0]==xypoint[i][0]){
+//         if(temp > xypoint[i][1]){
+//             temp = parseInt(xypoint[i][1]);
+//             res = temp;
+//         }
+//         }
+//         }
+//         for(var j=0; j<res-100; j++){
+//             resultline[j]=createDiv("2px","1px","#ff0000");
+//             resultline[j].style.left=ranpointX[0]+"px";
+//             resultline[j].style.top=a+"px";
+//             a=a+1;
+//             document.getElementById("ladderbody").appendChild(resultline[j]);
+//         }
+//             for(var i =0; i<cnt;i++){
+//             resultline[i]=createDiv(nWidth+"px","2px","#ff0000");
+//             resultline[i].style.left=ranpointX[0]+"px";
+//             resultline[i].style.top=res+"px";
+//             //a=a+1;
+//             document.getElementById("ladderbody").appendChild(resultline[i]);
+//             }
+//             for(var i=0;i<res; i++){
+//             if(res<xypoint[i][1]){
+//                 temp = parseInt(xypoint[i][1]);
+//                 res = temp;
+//             }
+//             resultline[i]=createDiv("1px","2px","#ff0000");
+//             resultline[i].style.left=ranpointX[1]+"px";
+//             resultline[i].style.top=a+"px"; 
+//             }
+        //break;
+        //console.log(parseInt(ranpointX[1])-parseInt(ranpointX[0]));
+        //     if(xypoint[i][0]==ranpointX[i]){
+        //     }
+        //         resultline[i]=createDiv("1px","2px","#ff0000");
+        //         resultline[i].style.left=a+"px";
+        //         resultline[i].style.top=ranpointy2[i];
+        // a=a+1;
+        // document.getElementById("ladderbody").appendChild(resultline[i]);
+        
+            
+            //for(var j =0; j<ranpointX.max; j++){
+           // }
+        //}
+    
+
+    
+    
+    document.onkeydown = function (e) {
+        if (!e) e = window.event;
+        if (e.keyCode == 116) {
+            if (confirm("다시시작하시겟습니까?")) {
+            } else {
+                e.keyCode = 0;
+                return false;
+            }
+        }
+    }
+</script>
+
+</html>
